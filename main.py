@@ -9,6 +9,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+kart_access_token = "54jkwilsnowmnnsmkso"
+
+
+apis = {
+    "kids": f"https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=242396&startDate=1920-5-1+06%3A00%3A00&endDate=&maxResult=1000&accessToken={kart_access_token}",
+    "normal": f"https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=242392&startDate=1920-5-1+06%3A00%3A00&endDate=&maxResult=1000&accessToken={kart_access_token}",
+    "adults": f"https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=&startDate=1920-5-1+06%3A00%3A00&endDate=&maxResult=5000&accessToken={kart_access_token}"
+}
+
 
 async def start(update: Update, context):
     user_name = update.message.from_user.username
@@ -26,23 +35,16 @@ async def handle_text(update: Update, context):
     await update.message.reply_text(update.message.text)
 
 
-async def userStats(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    api = "https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=&startDate=2020-5-1+06%3A00%3A00&endDate=&maxResult=5000&accessToken=87sjcwkcjbcxbboxxob"
-
+def userStatInfo(user_name, category):
+    
+    api = apis[category]
+    
     response = requests.get(api)
     data = response.json()
 
     total_records = len(data["records"])
 
-    # get all text after the command
-    command_parts = update.message.text.split(" ")
-    if len(command_parts) > 1:
-        searched_user = " ".join(command_parts[1:])
-    else:
-        await update.message.reply_text("Please specify the user name.")
-        return
-
-    searched_user_cleaned = searched_user.replace(" ", "")
+    searched_user_cleaned = user_name.replace(" ", "")
     print(f"searched_user_cleaned: {searched_user_cleaned}")
 
     first_place = data["records"][0]["score"]
@@ -116,11 +118,10 @@ async def userStats(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message_options = [message1, message2, message3]
             random_message = random.choice(message_options)
 
-            await update.message.reply_text(random_message, parse_mode="HTML")
-
-            break
+            return True, random_message
     else:
-        await update.message.reply_text("We could not find that user!")
+        return False, "User not found in the records"
+
 
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -135,33 +136,33 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("\n".join(commands), parse_mode="HTML")
 
 
-async def city(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    list_of_cities = ['Erode', 'Coimbatore', 'London', 'Thunder Bay', 'California']
+
+
+async def userstats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    list_of_cities = ["Kids", "Normal", "Adults"]
     button_list = []
     for each in list_of_cities:
         button_list.append(InlineKeyboardButton(each, callback_data=each))
-
-    # n_cols = 1 is for single column and multiple rows
-    reply_markup = InlineKeyboardMarkup(await build_menu(button_list, n_cols=1))
     
-    if update.callback_query:
 
-        current_text = 'Choose a city:'
-        if update.callback_query.message.text != current_text or update.callback_query.message.reply_markup != reply_markup:
-            await update.callback_query.answer()
-            await update.callback_query.message.edit_text(current_text, reply_markup=reply_markup)
+    reply_markup = InlineKeyboardMarkup(await build_menu(button_list, n_cols=len(list_of_cities)))
+
+    
+
+    if update.message:
+        if 'category' in context.user_data:
+            del context.user_data['category']
         else:
-            # print the user pressed button
-            button_pressed = update.callback_query.data
-            
+            await update.message.reply_text('Please select a category to view detailed GoKart driver stats: 📊', reply_markup=reply_markup)
+    
+    elif update.callback_query:
+        button_pressed = update.callback_query.data
+        context.user_data['category'] = button_pressed  # Store the selected category in user_data
 
-            # send a new message with the city name
-            await update.callback_query.message.reply_text(f"You chose {button_pressed}!")
-            
-    elif update.message:
-        await update.message.reply_text('Choose a city:', reply_markup=reply_markup)
+        await update.callback_query.answer()
+        await update.callback_query.message.reply_text(f"Please provide the driver's username for the {button_pressed} category:")
+    
     else:
-        # Handle other types of updates if necessary
         pass
 
 
@@ -175,6 +176,23 @@ async def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
     return menu
 
 
+async def handle_text_response(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if 'category' in context.user_data:
+        category = context.user_data['category']
+        username = update.message.text
+        
+
+        message = await update.message.reply_text(f"Retrieving stats for {username} in category {category}...")
+        user_info = userStatInfo(username, category.lower())
+        await message.edit_text(user_info[1], parse_mode="HTML")
+        
+        # Clear the user_data category to reset the state
+        del context.user_data['category']
+    else:
+        await update.message.reply_text("For a list of commands, type /help. 🏎️📊")
+
+
+
 
 def main():
     bot_token = os.getenv('BOT_TOKEN')
@@ -184,8 +202,11 @@ def main():
     # app.add_handler(CommandHandler(command='userstats', callback=userStats))
 
     # add the buttons
-    app.add_handler(CommandHandler(command='city', callback=city))
-    app.add_handler(CallbackQueryHandler(city))
+    app.add_handler(CommandHandler('userstats', userstats))
+    
+    # Handler for non-command text messages
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_response))
+    app.add_handler(CallbackQueryHandler(userstats))
     
 
 
