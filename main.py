@@ -4,72 +4,68 @@ import os
 import requests
 from datetime import datetime
 import random
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+kart_access_token = "54jkwilsnowmnnsmkso"
+
+
+apis = {
+    "kids": f"https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=242396&startDate=1920-5-1+06%3A00%3A00&endDate=&maxResult=1000&accessToken={kart_access_token}",
+    "normal": f"https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=242392&startDate=1920-5-1+06%3A00%3A00&endDate=&maxResult=1000&accessToken={kart_access_token}",
+    "adults": f"https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=&startDate=1920-5-1+06%3A00%3A00&endDate=&maxResult=5000&accessToken={kart_access_token}"
+}
 
 
 async def start(update: Update, context):
     user_name = update.message.from_user.username
-    
+
     commands = [
         "<b>/userstats</b> - Get user stats",
         "<b>/help</b> - Get help"
     ]
-    
+
     await update.message.reply_text(f"Hello, {user_name}! Here are the available commands:\n\n" + "\n".join(commands), parse_mode="HTML")
-    
-    
 
 
 async def handle_text(update: Update, context):
     # reply with the same message
     await update.message.reply_text(update.message.text)
 
-async def downloader(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    
-    new_file = await update.message.effective_attachment[-1].get_file()
-    file = await new_file.download_to_drive()
-    
-    return file
 
-async def userStats(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    api = "https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=&startDate=2020-5-1+06%3A00%3A00&endDate=&maxResult=5000&accessToken=87sjcwkcjbcxbboxxob"
+def userStatInfo(user_name, category):
+    
+    api = apis[category]
     
     response = requests.get(api)
     data = response.json()
 
     total_records = len(data["records"])
-    
-    # get all text after the command
-    command_parts = update.message.text.split(" ")
-    if len(command_parts) > 1:
-        searched_user = " ".join(command_parts[1:])
-    else:
-        await update.message.reply_text("Please specify the user name.")
-        return
 
-    searched_user_cleaned = searched_user.replace(" ", "")
+    searched_user_cleaned = user_name.replace(" ", "")
     print(f"searched_user_cleaned: {searched_user_cleaned}")
-    
-    
-    first_place = data["records"][0]["score"]
 
+    first_place = data["records"][0]["score"]
 
     for i in data["records"]:
         current_user = str(i['participant'].replace(" ", ""))
         # print(f"current_user: {current_user}")
         if current_user == searched_user_cleaned:
-            
+
             date = i['date']
             formatted_date = date.split("T")[0]
             date_object = datetime.strptime(formatted_date, '%Y-%m-%d')
             day_of_week = date_object.strftime('%A')
-            
+
             player_top_percentage = (i['position'] / total_records) * 100
-            
-            percentage_to_beat_first = abs(((float(first_place) - float(i['score'])) / float(first_place)) * 100)
-            
+
+            percentage_to_beat_first = abs(
+                ((float(first_place) - float(i['score'])) / float(first_place)) * 100)
+
             seconds_to_beat_first = float(first_place) - float(i['score'])
-            
-            
+
             label = ""
             if player_top_percentage >= 80:
                 label = "Newbie"
@@ -85,7 +81,7 @@ async def userStats(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 label = "Legendary"
             else:
                 label = "Track Owner"
-                
+
             message1 = (
                 f"<b>🏎️ Participant:</b> {i['participant']}\n"
                 f"<b>🚀 Fastest Lap:</b> <i>{i['score']} seconds</i>\n"
@@ -96,7 +92,7 @@ async def userStats(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"\n<b>Performance Label:</b> <i>{label}</i> 🏅"
                 "\n\n<b>Let's aim even higher next time!</b> 🎉"
             )
-            
+
             message2 = (
                 f"<b>🏎️ Racer:</b> {i['participant']}\n"
                 f"<b>🚀 Lap Time:</b> <i>{i['score']} seconds</i>\n"
@@ -107,7 +103,7 @@ async def userStats(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"\n<b>Performance Label:</b> <i>{label}</i> 🏅"
                 "\n\n<b>Strive for excellence in the next race!</b> 🏁"
             )
-            
+
             message3 = (
                 f"<b>🏎️ Driver:</b> {i['participant']}\n"
                 f"<b>🚀 Best Lap:</b> <i>{i['score']} seconds</i>\n"
@@ -119,56 +115,12 @@ async def userStats(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "\n\n<b>Keep pushing boundaries for greater achievements!</b> 🏅"
             )
 
-
-
-            
             message_options = [message1, message2, message3]
             random_message = random.choice(message_options)
-            
-            await update.message.reply_text(random_message, parse_mode="HTML")
 
-            break
+            return True, random_message
     else:
-        await update.message.reply_text("We could not find that user!")
-        
-        
-
-
-# def userButtons(update: Update, context: CallbackContext):
-#     keyboard = [
-#         [InlineKeyboardButton("Adult", callback_data='adult'),
-#          InlineKeyboardButton("Normal", callback_data='normal'),
-#          InlineKeyboardButton("Kids", callback_data='kids')]
-#     ]
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-#     update.message.reply_text('Please choose a category:', reply_markup=reply_markup)
-
-
-# def button(update: Update, context: CallbackContext):
-#     query = update.callback_query
-#     query.answer()
-    
-#     # Define different URLs for each category
-#     urls = {
-#         'adult': "https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=&startDate=1920-5-1+06%3A00%3A00&endDate=&maxResult=5000&accessToken=87sjcwkcjbcxbboxxob",
-#         'normal': "https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=242392&startDate=1920-5-1+06%3A00%3A00&endDate=&maxResult=1000&accessToken=13inbopbnjkolkoomlp",
-#         'kids': "https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=242396&startDate=1920-5-1+06%3A00%3A00&endDate=&maxResult=1000&accessToken=13inbopbnjkolkoomlp"
-#     }
-    
-#     # Fetch data based on the selected category
-#     api_url = urls[query.data]
-#     response = requests.get(api_url)
-#     data = response.json()
-
-#     update.message.reply_text(f"Stats for in category {query.data}")
-
-        
-        
-# async def compareTwoDrivers(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     api = "https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=&startDate=2020-5-1+06%3A00%3A00&endDate=&maxResult=5000&accessToken=87sjcwkcjbcxbboxxob"
-    
-#     response = requests.get(api)
-#     data = response.json()
+        return False, "User not found in the records"
 
 
 
@@ -180,37 +132,88 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "<b>/userstats</b> - Get user stats",
         "<b>/help</b> - Get help"
     ]
-    
+
     await update.message.reply_text("\n".join(commands), parse_mode="HTML")
 
 
 
 
+async def userstats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    list_of_cities = ["Kids", "Normal", "Adults"]
+    button_list = []
+    for each in list_of_cities:
+        button_list.append(InlineKeyboardButton(each, callback_data=each))
+    
 
-# async def image_processing(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    reply_markup = InlineKeyboardMarkup(await build_menu(button_list, n_cols=len(list_of_cities)))
+
     
-#     file = await downloader(update, context)
+
+    if update.message:
+        if 'category' in context.user_data:
+            del context.user_data['category']
+        else:
+            await update.message.reply_text('Please select a category to view detailed GoKart driver stats: 📊', reply_markup=reply_markup)
     
-#     await update.message.reply_text("testing")
+    elif update.callback_query:
+        button_pressed = update.callback_query.data
+        context.user_data['category'] = button_pressed  # Store the selected category in user_data
+
+        await update.callback_query.answer()
+        await update.callback_query.message.reply_text(f"Please provide the driver's username for the {button_pressed} category:")
     
+    else:
+        pass
+
+
+
+async def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
+    menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
+    if header_buttons:
+        menu.insert(0, header_buttons)
+    if footer_buttons:
+        menu.append(footer_buttons)
+    return menu
+
+
+async def handle_text_response(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if 'category' in context.user_data:
+        category = context.user_data['category']
+        username = update.message.text
+        
+
+        message = await update.message.reply_text(f"Retrieving stats for {username} in category {category}...")
+        user_info = userStatInfo(username, category.lower())
+        await message.edit_text(user_info[1], parse_mode="HTML")
+        
+        # Clear the user_data category to reset the state
+        del context.user_data['category']
+    else:
+        await update.message.reply_text("For a list of commands, type /help. 🏎️📊")
+
+
+
 
 def main():
     bot_token = os.getenv('BOT_TOKEN')
     app = Application.builder().token(bot_token).build()
-    
+
     app.add_handler(CommandHandler(command='start', callback=start))
-    # app.add_handler(MessageHandler(filters.TEXT, callback=handle_text))
-    app.add_handler(MessageHandler(filters.PHOTO, downloader))    
-    app.add_handler(CommandHandler(command='userstats', callback=userStats))
+    # app.add_handler(CommandHandler(command='userstats', callback=userStats))
+
+    # add the buttons
+    app.add_handler(CommandHandler('userstats', userstats))
     
+    # Handler for non-command text messages
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_response))
+    app.add_handler(CallbackQueryHandler(userstats))
+    
+
+
     app.add_handler(CommandHandler(command='help', callback=help))
 
-    # app.add_handler(CommandHandler(command='buttons', callback=userButtons))
-
-  
-  
-  
     app.run_polling()
-    
+
+
 if __name__ == '__main__':
     main()
