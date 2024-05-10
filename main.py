@@ -30,8 +30,12 @@ async def start(update: Update, context):
     user_name = update.message.from_user.username
 
     commands = [
+        "<b>Commands:</b>",
+        "",
         "<b>/userstats</b> - Get user stats",
-        "<b>/help</b> - Get help"
+        "<b>/help</b> - Get help",
+        "<b>/top10</b> - Get top 10 drivers",
+        "<b>/quiz</b> - Do a quiz",
     ]
 
     await update.message.reply_text(f"Hello, {user_name}! Here are the available commands:\n\n" + "\n".join(commands), parse_mode="HTML")
@@ -42,7 +46,9 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "<b>Commands:</b>",
         "",
         "<b>/userstats</b> - Get user stats",
-        "<b>/help</b> - Get help"
+        "<b>/help</b> - Get help",
+        "<b>/top10</b> - Get top 10 drivers",
+        "<b>/quiz</b> - Do a quiz",
     ]
 
     await update.message.reply_text("\n".join(commands), parse_mode="HTML")
