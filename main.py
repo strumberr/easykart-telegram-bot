@@ -10,12 +10,14 @@ from components.userStats.userInfo import userStatInfo
 from components.authentication.authenticate import get_auth_bearer, get_access_token
 from components.userStats.top10 import top10Drivers
 
+from components.quiz.quizQuestions import quiz_questions
+
 load_dotenv()
 
-public_authorization_bearer = get_auth_bearer()
-kart_access_token = get_access_token(public_authorization_bearer)
+# public_authorization_bearer = get_auth_bearer()
+# kart_access_token = get_access_token(public_authorization_bearer)
 
-# kart_access_token = "04jkwimlmnbninobkil"
+kart_access_token = "81klinyamaimplolplk"
 
 apis = {
     "kids": f"https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=242396&startDate=1920-5-1+06%3A00%3A00&endDate=&maxResult=1000&accessToken={kart_access_token}",
@@ -54,6 +56,8 @@ async def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
     if footer_buttons:
         menu.append(footer_buttons)
     return menu
+
+
 
 
 
@@ -115,6 +119,14 @@ async def callback_query_handler(update: Update, context: ContextTypes.DEFAULT_T
 
 
 
+async def quiz(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        
+    await update.message.reply_text("If you want to do a quiz about gokarts, go to this bot: https://t.me/quizller_kart_bot 🏎️📝")
+
+
+
+
+
 def main():
     bot_token = os.getenv('BOT_TOKEN')
     app = Application.builder().token(bot_token).build()
@@ -130,6 +142,9 @@ def main():
 
     # Handler for non-command text messages
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_response))
+    
+    # Quiz handler
+    app.add_handler(CommandHandler('quiz', quiz))
 
     app.run_polling()
 
