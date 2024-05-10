@@ -8,7 +8,7 @@ This Telegram bot retrieves racing performance statistics and sends personalized
 - **Calculates detailed statistics** including:
   - Driver's performance statistics
   - Driver's position, percentile rank, and gap to the leader
-- **Fun racing quizzes** to test your knowledge on the sport.
+- **Fun racing quizzes** to test your knowledge on the sport. If you want to do them go to our other bot at: `https://t.me/quizller_kart_bot`
 - **Personalized, motivational messages** based on the user's performance to encourage improvement.
 
 ## Bot Commands
