@@ -22,8 +22,7 @@ Interact with the bot using these user-friendly commands to access various featu
   Provides a help message explaining how to use the bot and the different commands available.
 
 - **`/userstats`**  
-  Retrieves detailed statistics about a user's racing performance. Users should provide their username and the specific category of races.  
-  Example: `/userstats JohnDoe amateur`
+  Retrieves detailed statistics about a user's racing performance. Users should provide their username and the specific category of races.
 
 - **`/top10`**  
   Displays the top 10 performances in the most recent races across all categories. Useful for seeing who the current leaders are and gauging the competition.
