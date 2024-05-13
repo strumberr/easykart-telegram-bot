@@ -15,10 +15,10 @@ from components.userStats.compareDrivers import compareDriversStats
 
 load_dotenv()
 
-# public_authorization_bearer = get_auth_bearer()
-# kart_access_token = get_access_token(public_authorization_bearer)
+public_authorization_bearer = get_auth_bearer()
+kart_access_token = get_access_token(public_authorization_bearer)
 
-kart_access_token = "30npomaynanpnoioomm"
+# kart_access_token = "30npomaynanpnoioomm"
 
 apis = {
     "kids": f"https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=242396&startDate=1920-5-1+06%3A00%3A00&endDate=&maxResult=1000&accessToken={kart_access_token}",
@@ -34,9 +34,11 @@ async def start(update: Update, context):
         "<b>Commands:</b>",
         "",
         "<b>/userstats</b> - Get user stats",
+        "<b>/compare</b> - Compare two drivers",
         "<b>/help</b> - Get help",
         "<b>/top10</b> - Get top 10 drivers",
         "<b>/quiz</b> - Do a quiz",
+        
     ]
 
     await update.message.reply_text(f"Hello, {user_name}! Here are the available commands:\n\n" + "\n".join(commands), parse_mode="HTML")
@@ -47,9 +49,11 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "<b>Commands:</b>",
         "",
         "<b>/userstats</b> - Get user stats",
+        "<b>/compare</b> - Compare two drivers",
         "<b>/help</b> - Get help",
         "<b>/top10</b> - Get top 10 drivers",
         "<b>/quiz</b> - Do a quiz",
+        
     ]
 
     await update.message.reply_text("\n".join(commands), parse_mode="HTML")
