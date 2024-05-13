@@ -15,10 +15,10 @@ from components.userStats.compareDrivers import compareDriversStats
 
 load_dotenv()
 
-# public_authorization_bearer = get_auth_bearer()
-# kart_access_token = get_access_token(public_authorization_bearer)
+public_authorization_bearer = get_auth_bearer()
+kart_access_token = get_access_token(public_authorization_bearer)
 
-kart_access_token = "30npomaynanpnoioomm"
+# kart_access_token = "30npomaynanpnoioomm"
 
 apis = {
     "kids": f"https://modules-api6.sms-timing.com/api/besttimes/records/easykart?locale=ENG&rscId=242388&scgId=242396&startDate=1920-5-1+06%3A00%3A00&endDate=&maxResult=1000&accessToken={kart_access_token}",
