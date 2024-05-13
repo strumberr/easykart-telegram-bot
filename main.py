@@ -13,6 +13,8 @@ from components.userStats.top10 import top10Drivers
 from components.quiz.quizQuestions import quiz_questions
 from components.userStats.compareDrivers import compareDriversStats
 
+import asyncio
+
 load_dotenv()
 
 public_authorization_bearer = get_auth_bearer()
@@ -161,6 +163,16 @@ async def compare(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
+async def refresh_tokens():
+    while True:
+        print("Refreshing tokens...")
+        public_authorization_bearer = get_auth_bearer()
+        global kart_access_token
+        kart_access_token = get_access_token(public_authorization_bearer)
+        print("Tokens refreshed")
+        await asyncio.sleep(12 * 3600)
+
+
 
 
 def main():
@@ -184,6 +196,10 @@ def main():
     
     # Compare handler
     app.add_handler(CommandHandler('compare', compare))
+    
+    # Refresh tokens every 12 hours
+    asyncio.ensure_future(refresh_tokens())
+    
 
     app.run_polling()
 
