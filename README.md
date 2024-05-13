@@ -22,10 +22,13 @@ Interact with the bot using these user-friendly commands to access various featu
   Provides a help message explaining how to use the bot and the different commands available.
 
 - **`/userstats`**  
-  Retrieves detailed statistics about a user's racing performance. Users should provide their username and the specific category of races.
+  When the command is called, you will first select a racing category (Kids, Normal, or Adults). After selecting a category, you will be prompted to enter the username for the driver, then the bot retrieves detailed statistics about the user's racing performance.
 
 - **`/top10`**  
   Displays the top 10 performances in the most recent races across all categories. Useful for seeing who the current leaders are and gauging the competition.
+
+- **`/compare`**  
+  Initiates a process to compare two GoKart drivers' performances. Upon calling this command, you will first select a racing category (Kids, Normal, or Adults). After selecting a category, you will be prompted to enter the usernames of two drivers. The bot will then retrieve and display a detailed comparison of their lap times, positions, and overall performance percentages, including how much faster one driver is compared to the other both in seconds and percentage. This command is useful for analyzing head-to-head performances and seeing which driver has the edge in direct comparison.
 
 ## Getting Started
 
